@@ -809,14 +809,23 @@ static NSString *const iRateMacAppStoreURLFormat = @"macappstore://itunes.apple.
     
 #if TARGET_OS_IPHONE
     
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:self.messageTitle
-                                                        message:message
-                                                       delegate:(id<UIAlertViewDelegate>)self
-                                              cancelButtonTitle:[self.cancelButtonLabel length] ? self.cancelButtonLabel: nil
-                                              otherButtonTitles:self.rateButtonLabel, nil];
-        if ([self.remindButtonLabel length])
+        UIAlertView *alert;
+        
+        if ([self.cancelButtonLabel isEqualToString:@""])
         {
-            [alert addButtonWithTitle:self.remindButtonLabel];
+            alert = [[UIAlertView alloc] initWithTitle:self.messageTitle
+                                               message:message
+                                              delegate:(id<UIAlertViewDelegate>)self
+                                     cancelButtonTitle:[self.remindButtonLabel length] ? self.remindButtonLabel : nil
+                                     otherButtonTitles:self.rateButtonLabel, nil];
+        }
+        else
+        {
+            alert = [[UIAlertView alloc] initWithTitle:self.messageTitle
+                                               message:message
+                                              delegate:(id<UIAlertViewDelegate>)self
+                                     cancelButtonTitle:[self.cancelButtonLabel length] ? self.cancelButtonLabel: nil
+                                     otherButtonTitles:self.rateButtonLabel, [self.remindButtonLabel length] ? self.remindButtonLabel : nil, nil];
         }
         
         self.visibleAlert = alert;
@@ -1020,6 +1029,19 @@ static NSString *const iRateMacAppStoreURLFormat = @"macappstore://itunes.apple.
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
+    if ([self.cancelButtonLabel isEqualToString:@""])
+    {
+        if (buttonIndex == alertView.cancelButtonIndex)
+        {
+            [self remindLater];
+            return ;
+        }
+        else
+        {
+            [self rate];
+            return ;
+        }
+    }
     if (buttonIndex == alertView.cancelButtonIndex)
     {
         [self declineThisVersion];
